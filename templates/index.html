@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Voltage Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; }
+    label { display: block; margin-top: 10px; }
+    input { padding: 6px; width: 100%; box-sizing: border-box; }
+    button { margin-top: 15px; padding: 8px 16px; }
+    .result { margin-top: 20px; font-size: 1.2em; }
+    .error { margin-top: 20px; color: #b00020; }
+    canvas { margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>Voltage Calculator</h1>
+  <p>Ohm's law: V = I &times; R</p>
+
+  <form method="post">
+    <label for="current">Current (A)</label>
+    <input type="text" id="current" name="current" value="{{ current_input }}" required>
+
+    <label for="resistance">Resistance (&Omega;)</label>
+    <input type="text" id="resistance" name="resistance" value="{{ resistance_input }}" required>
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  {% if result is not none %}
+    <p class="result">Voltage: {{ result }} V</p>
+  {% endif %}
+
+  {% if error %}
+    <p class="error">Error: {{ error }}</p>
+  {% endif %}
+
+  {% if chart_currents %}
+    <canvas id="voltageChart" width="400" height="250"></canvas>
+    <script>
+      const ctx = document.getElementById('voltageChart');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: {{ chart_currents | tojson }},
+          datasets: [{
+            label: 'Voltage (V) vs Current (A) at R = {{ resistance_input }} Ω',
+            data: {{ chart_voltages | tojson }},
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            fill: true,
+            pointRadius: 0,
+          }]
+        },
+        options: {
+          scales: {
+            x: { title: { display: true, text: 'Current (A)' } },
+            y: { title: { display: true, text: 'Voltage (V)' } }
+          }
+        }
+      });
+    </script>
+  {% endif %}
+</body>
+</html>
