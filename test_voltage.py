@@ -1,6 +1,6 @@
 import pytest
 
-from voltage import calculate_total_resistance, calculate_voltage, _parse_number
+from voltage import calculate_current, calculate_total_resistance, calculate_voltage, _parse_number
 
 
 def test_normal_values():
@@ -84,3 +84,34 @@ def test_total_resistance_non_numeric_value_raises():
 def test_total_resistance_unknown_mode_raises():
     with pytest.raises(ValueError):
         calculate_total_resistance([10, 20], "bogus")
+
+
+def test_current_normal_values():
+    assert calculate_current(20, 10) == 2
+
+
+def test_current_decimals():
+    assert calculate_current(6.3, 4.2) == pytest.approx(1.5)
+
+
+def test_current_zero_voltage():
+    assert calculate_current(0, 10) == 0
+
+
+def test_current_negative_voltage():
+    assert calculate_current(-20, 10) == -2
+
+
+def test_current_zero_resistance_raises():
+    with pytest.raises(ValueError):
+        calculate_current(10, 0)
+
+
+def test_current_negative_resistance_raises():
+    with pytest.raises(ValueError):
+        calculate_current(10, -5)
+
+
+def test_current_non_numeric_voltage_raises():
+    with pytest.raises(ValueError):
+        _parse_number("abc", "Voltage")

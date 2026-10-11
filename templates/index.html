@@ -71,6 +71,29 @@
 
   <hr>
 
+  <h1>Current</h1>
+  <p>Ohm's law: I = V / R</p>
+
+  <form method="post" action="/current">
+    <label for="current_voltage">Voltage (V)</label>
+    <input type="text" id="current_voltage" name="voltage" value="{{ current_calc_voltage_input }}" required>
+
+    <label for="current_resistance">Resistance (&Omega;)</label>
+    <input type="text" id="current_resistance" name="resistance" value="{{ current_calc_resistance_input }}" required>
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  {% if current_calc_result is not none %}
+    <p class="result">Current: {{ current_calc_result }} A</p>
+  {% endif %}
+
+  {% if current_calc_error %}
+    <p class="error">Error: {{ current_calc_error }}</p>
+  {% endif %}
+
+  <hr>
+
   <h1>Total Resistance</h1>
   <p>Series: sum of all values. Parallel: 1 / (1/R1 + 1/R2 + ...)</p>
 

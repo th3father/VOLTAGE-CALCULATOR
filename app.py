@@ -2,7 +2,7 @@
 
 from flask import Flask, jsonify, render_template, request
 
-from voltage import calculate_total_resistance, calculate_voltage, _parse_number
+from voltage import calculate_current, calculate_total_resistance, calculate_voltage, _parse_number
 
 app = Flask(__name__)
 
@@ -45,6 +45,43 @@ def index():
         resistance_input=resistance_input,
         chart_currents=chart_currents,
         chart_voltages=chart_voltages,
+        current_calc_result=None,
+        current_calc_error=None,
+        current_calc_voltage_input="",
+        current_calc_resistance_input="",
+    )
+
+
+@app.route("/current", methods=["GET", "POST"])
+def current_route():
+    current_calc_result = None
+    current_calc_error = None
+    current_calc_voltage_input = ""
+    current_calc_resistance_input = ""
+
+    if request.method == "POST":
+        current_calc_voltage_input = request.form.get("voltage", "")
+        current_calc_resistance_input = request.form.get("resistance", "")
+        try:
+            voltage = _parse_number(current_calc_voltage_input, "Voltage")
+            resistance = _parse_number(current_calc_resistance_input, "Resistance")
+            current_value = calculate_current(voltage, resistance)
+            current_calc_result = f"{current_value:g}"
+        except ValueError as exc:
+            current_calc_error = str(exc)
+
+    return render_template(
+        "index.html",
+        result=None,
+        error=None,
+        current_input="",
+        resistance_input="",
+        chart_currents=[],
+        chart_voltages=[],
+        current_calc_result=current_calc_result,
+        current_calc_error=current_calc_error,
+        current_calc_voltage_input=current_calc_voltage_input,
+        current_calc_resistance_input=current_calc_resistance_input,
     )
 
 
