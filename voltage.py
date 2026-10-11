@@ -13,6 +13,18 @@ def calculate_voltage(current, resistance):
     return current * resistance
 
 
+def calculate_current(voltage, resistance):
+    """Return current in amperes given voltage (V) and resistance (ohms).
+
+    Raises ValueError if resistance is zero or negative.
+    """
+    if resistance == 0:
+        raise ValueError("Resistance cannot be zero.")
+    if resistance < 0:
+        raise ValueError("Resistance cannot be negative.")
+    return voltage / resistance
+
+
 def calculate_total_resistance(resistances, mode):
     """Return total resistance in ohms for resistors in series or parallel.
 
