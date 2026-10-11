@@ -12,6 +12,12 @@
     .result { margin-top: 20px; font-size: 1.2em; }
     .error { margin-top: 20px; color: #b00020; }
     canvas { margin-top: 30px; }
+    hr { margin-top: 40px; }
+    .resistor-row { display: flex; gap: 8px; margin-top: 8px; }
+    .resistor-row input { flex: 1; }
+    .resistor-row button { margin-top: 0; padding: 6px 10px; }
+    #addResistor { margin-top: 10px; }
+    #copyToVoltage { margin-left: 10px; }
   </style>
 </head>
 <body>
@@ -62,5 +68,101 @@
       });
     </script>
   {% endif %}
+
+  <hr>
+
+  <h1>Total Resistance</h1>
+  <p>Series: sum of all values. Parallel: 1 / (1/R1 + 1/R2 + ...)</p>
+
+  <div id="resistorRows">
+    <div class="resistor-row">
+      <input type="text" class="resistor-input" placeholder="Resistor 1 (&Omega;)">
+      <button type="button" class="removeResistor">Remove</button>
+    </div>
+    <div class="resistor-row">
+      <input type="text" class="resistor-input" placeholder="Resistor 2 (&Omega;)">
+      <button type="button" class="removeResistor">Remove</button>
+    </div>
+  </div>
+  <button type="button" id="addResistor">Add resistor</button>
+
+  <label for="mode">Mode</label>
+  <select id="mode">
+    <option value="series">Series</option>
+    <option value="parallel">Parallel</option>
+  </select>
+
+  <button type="button" id="calculateResistance">Calculate total resistance</button>
+
+  <p class="result" id="resistanceResult" style="display: none;"></p>
+  <p class="error" id="resistanceError" style="display: none;"></p>
+  <button type="button" id="copyToVoltage" style="display: none;">Copy total to voltage calculator</button>
+
+  <script>
+    const resistorRows = document.getElementById('resistorRows');
+    const addResistorButton = document.getElementById('addResistor');
+    const calculateResistanceButton = document.getElementById('calculateResistance');
+    const resistanceResult = document.getElementById('resistanceResult');
+    const resistanceError = document.getElementById('resistanceError');
+    const copyToVoltageButton = document.getElementById('copyToVoltage');
+
+    function makeResistorRow(index) {
+      const row = document.createElement('div');
+      row.className = 'resistor-row';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'resistor-input';
+      input.placeholder = `Resistor ${index} (Ω)`;
+
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'removeResistor';
+      removeButton.textContent = 'Remove';
+      removeButton.addEventListener('click', () => row.remove());
+
+      row.appendChild(input);
+      row.appendChild(removeButton);
+      return row;
+    }
+
+    resistorRows.querySelectorAll('.removeResistor').forEach((button) => {
+      button.addEventListener('click', () => button.closest('.resistor-row').remove());
+    });
+
+    addResistorButton.addEventListener('click', () => {
+      resistorRows.appendChild(makeResistorRow(resistorRows.children.length + 1));
+    });
+
+    calculateResistanceButton.addEventListener('click', async () => {
+      const resistances = Array.from(document.querySelectorAll('.resistor-input')).map((input) => input.value);
+      const mode = document.getElementById('mode').value;
+
+      resistanceResult.style.display = 'none';
+      resistanceError.style.display = 'none';
+      copyToVoltageButton.style.display = 'none';
+
+      const response = await fetch('/resistance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resistances, mode }),
+      });
+      const data = await response.json();
+
+      if (data.error) {
+        resistanceError.textContent = `Error: ${data.error}`;
+        resistanceError.style.display = 'block';
+      } else {
+        resistanceResult.textContent = `Total resistance: ${data.result} Ω`;
+        resistanceResult.style.display = 'block';
+        copyToVoltageButton.dataset.value = data.result;
+        copyToVoltageButton.style.display = 'inline-block';
+      }
+    });
+
+    copyToVoltageButton.addEventListener('click', () => {
+      document.getElementById('resistance').value = copyToVoltageButton.dataset.value;
+    });
+  </script>
 </body>
 </html>

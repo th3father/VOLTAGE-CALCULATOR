@@ -1,8 +1,8 @@
 """Flask web interface for the Ohm's law voltage calculator."""
 
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 
-from voltage import calculate_voltage, _parse_number
+from voltage import calculate_total_resistance, calculate_voltage, _parse_number
 
 app = Flask(__name__)
 
@@ -46,6 +46,19 @@ def index():
         chart_currents=chart_currents,
         chart_voltages=chart_voltages,
     )
+
+
+@app.route("/resistance", methods=["POST"])
+def resistance():
+    data = request.get_json(silent=True) or {}
+    resistances = data.get("resistances", [])
+    mode = data.get("mode", "")
+
+    try:
+        total = calculate_total_resistance(resistances, mode)
+        return jsonify({"result": total, "error": None})
+    except ValueError as exc:
+        return jsonify({"result": None, "error": str(exc)})
 
 
 if __name__ == "__main__":

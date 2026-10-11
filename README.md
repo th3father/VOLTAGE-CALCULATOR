@@ -3,6 +3,12 @@
 Calculates voltage from current and resistance using Ohm's law (V = I x R).
 Includes a command-line interface and a Flask web interface.
 
+Also calculates total resistance for resistors in series or in parallel,
+with a "Total Resistance" section on the web page. Add or remove resistor
+values, pick series or parallel, and see the total in ohms. A "Copy total
+to voltage calculator" button carries that total straight into the
+voltage calculator's resistance field.
+
 ## Install
 
 ```

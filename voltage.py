@@ -13,6 +13,31 @@ def calculate_voltage(current, resistance):
     return current * resistance
 
 
+def calculate_total_resistance(resistances, mode):
+    """Return total resistance in ohms for resistors in series or parallel.
+
+    resistances is a list of numbers (or numeric strings). mode is
+    "series" or "parallel". Raises ValueError for an empty list, a
+    negative or non-numeric value, or an unknown mode.
+    """
+    if mode not in ("series", "parallel"):
+        raise ValueError(f"Mode must be 'series' or 'parallel', got '{mode}'.")
+    if not resistances:
+        raise ValueError("At least one resistance value is required.")
+
+    values = [_parse_number(r, "Resistance") for r in resistances]
+    for value in values:
+        if value < 0:
+            raise ValueError("Resistance cannot be negative.")
+
+    if mode == "series":
+        return sum(values)
+
+    if any(value == 0 for value in values):
+        return 0.0
+    return 1 / sum(1 / value for value in values)
+
+
 def _parse_number(value, label):
     try:
         return float(value)
