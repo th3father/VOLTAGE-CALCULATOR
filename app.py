@@ -2,7 +2,7 @@
 
 from flask import Flask, jsonify, render_template, request
 
-from voltage import calculate_total_resistance, calculate_voltage, _parse_number
+from voltage import calculate_resistance, calculate_total_resistance, calculate_voltage, _parse_number
 
 app = Flask(__name__)
 
@@ -45,6 +45,10 @@ def index():
         resistance_input=resistance_input,
         chart_currents=chart_currents,
         chart_voltages=chart_voltages,
+        resistance_calc_result=None,
+        resistance_calc_error=None,
+        resistance_calc_voltage_input="",
+        resistance_calc_current_input="",
     )
 
 
@@ -59,6 +63,39 @@ def resistance():
         return jsonify({"result": total, "error": None})
     except ValueError as exc:
         return jsonify({"result": None, "error": str(exc)})
+
+
+@app.route("/resistance-calc", methods=["GET", "POST"])
+def resistance_calc():
+    resistance_calc_result = None
+    resistance_calc_error = None
+    resistance_calc_voltage_input = ""
+    resistance_calc_current_input = ""
+
+    if request.method == "POST":
+        resistance_calc_voltage_input = request.form.get("voltage", "")
+        resistance_calc_current_input = request.form.get("current", "")
+        try:
+            voltage = _parse_number(resistance_calc_voltage_input, "Voltage")
+            current = _parse_number(resistance_calc_current_input, "Current")
+            resistance_value = calculate_resistance(voltage, current)
+            resistance_calc_result = f"{resistance_value:g}"
+        except ValueError as exc:
+            resistance_calc_error = str(exc)
+
+    return render_template(
+        "index.html",
+        result=None,
+        error=None,
+        current_input="",
+        resistance_input="",
+        chart_currents=[],
+        chart_voltages=[],
+        resistance_calc_result=resistance_calc_result,
+        resistance_calc_error=resistance_calc_error,
+        resistance_calc_voltage_input=resistance_calc_voltage_input,
+        resistance_calc_current_input=resistance_calc_current_input,
+    )
 
 
 if __name__ == "__main__":

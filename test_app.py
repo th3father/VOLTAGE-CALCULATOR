@@ -92,3 +92,53 @@ def test_resistance_unknown_mode_shows_error(client):
     data = response.get_json()
     assert data["result"] is None
     assert data["error"] is not None
+
+
+def test_get_resistance_calc(client):
+    response = client.get("/resistance-calc")
+    assert response.status_code == 200
+    assert b"Resistance" in response.data
+
+
+def test_post_resistance_calc_valid_values(client):
+    response = client.post("/resistance-calc", data={"voltage": "20", "current": "2"})
+    assert response.status_code == 200
+    assert b"Resistance: 10 &Omega;" in response.data
+
+
+def test_post_resistance_calc_decimals(client):
+    response = client.post("/resistance-calc", data={"voltage": "6.3", "current": "1.5"})
+    assert response.status_code == 200
+    assert b"Resistance: 4.2 &Omega;" in response.data
+
+
+def test_post_resistance_calc_zero_voltage(client):
+    response = client.post("/resistance-calc", data={"voltage": "0", "current": "10"})
+    assert response.status_code == 200
+    assert b"Resistance: 0 &Omega;" in response.data
+
+
+def test_post_resistance_calc_both_negative(client):
+    response = client.post("/resistance-calc", data={"voltage": "-20", "current": "-2"})
+    assert response.status_code == 200
+    assert b"Resistance: 10 &Omega;" in response.data
+
+
+def test_post_resistance_calc_zero_current_shows_error(client):
+    response = client.post("/resistance-calc", data={"voltage": "20", "current": "0"})
+    assert response.status_code == 200
+    assert b"Error:" in response.data
+    assert b"Current cannot be zero" in response.data
+
+
+def test_post_resistance_calc_opposite_signs_shows_error(client):
+    response = client.post("/resistance-calc", data={"voltage": "20", "current": "-2"})
+    assert response.status_code == 200
+    assert b"Error:" in response.data
+    assert b"opposite signs" in response.data
+
+
+def test_post_resistance_calc_non_numeric_shows_error(client):
+    response = client.post("/resistance-calc", data={"voltage": "abc", "current": "10"})
+    assert response.status_code == 200
+    assert b"Error:" in response.data
